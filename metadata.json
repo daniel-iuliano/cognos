@@ -1,0 +1,5 @@
+{
+  "name": "Cognos: AI Study Companion",
+  "description": "An intelligent study aid that transforms your notes and textbooks into interactive quizzes, flashcards, and personalized study plans using Google Gemini.",
+  "requestFramePermissions": []
+}
