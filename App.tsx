@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, BookOpen, BrainCircuit, Calendar, Layers, FileText, ChevronRight, MessageCircle, Globe, Loader2, Key } from 'lucide-react';
+import { Upload, BookOpen, BrainCircuit, Calendar, Layers, FileText, ChevronRight, MessageCircle, Globe, Loader2, Key, Unlock } from 'lucide-react';
 import { AppMode, QuizItem, Flashcard, StudyPlan, StudyContext, Language } from './types';
 import * as GeminiService from './services/geminiService';
 import { parseFile } from './services/fileParser';
@@ -72,6 +72,11 @@ const App: React.FC = () => {
         // Here we just log and user can try again
       }
     }
+  };
+
+  const handleUseFreeKey = () => {
+    // Proceed without explicit key selection, relying on environment default or free tier
+    setHasApiKey(true);
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -341,10 +346,18 @@ const App: React.FC = () => {
           </p>
           <button 
             onClick={handleConnectApiKey}
-            className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-200 flex items-center justify-center gap-2 mb-6"
+            className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-200 flex items-center justify-center gap-2 mb-4"
           >
             <BrainCircuit size={20} />
             {t.apiKey.connectBtn}
+          </button>
+
+          <button 
+            onClick={handleUseFreeKey}
+            className="w-full py-4 bg-white border border-gray-200 text-gray-700 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-2 mb-6"
+          >
+            <Unlock size={20} className="text-gray-500" />
+            {t.apiKey.freeBtn}
           </button>
           
           <a 
