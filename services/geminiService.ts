@@ -6,9 +6,9 @@ const MODEL_COMPLEX = "gemini-3-pro-preview";
 // Use gemini-3-flash-preview for faster, simpler tasks
 const MODEL_FAST = "gemini-3-flash-preview";
 
-// Initialize the client
-// The API key must be available in process.env.API_KEY
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Helper to initialize the client on demand
+// This ensures we always use the latest API key injected into the environment
+const getAIClient = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const LANGUAGE_MAP: Record<Language, string> = {
   en: "English",
@@ -45,6 +45,7 @@ export const generateQuizFromText = async (text: string, language: Language = 'e
   };
 
   try {
+    const ai = getAIClient();
     const response = await ai.models.generateContent({
       model: MODEL_COMPLEX,
       contents: prompt,
@@ -88,6 +89,7 @@ export const generateFlashcardsFromText = async (text: string, language: Languag
   };
 
   try {
+    const ai = getAIClient();
     const response = await ai.models.generateContent({
       model: MODEL_COMPLEX, // Pro model usually better for extracting key concepts accurately
       contents: prompt,
@@ -144,6 +146,7 @@ export const generateStudyPlanFromText = async (text: string, language: Language
   };
 
   try {
+    const ai = getAIClient();
     const response = await ai.models.generateContent({
       model: MODEL_COMPLEX,
       contents: prompt,
@@ -174,6 +177,7 @@ export const simplifyText = async (text: string, language: Language = 'en'): Pro
   ${text.slice(0, 30000)}`; 
 
   try {
+    const ai = getAIClient();
     const response = await ai.models.generateContent({
       model: MODEL_FAST, 
       contents: prompt,
@@ -188,6 +192,7 @@ export const simplifyText = async (text: string, language: Language = 'en'): Pro
 
 export const createChatSession = (initialContext: string, language: Language = 'en'): Chat => {
   const langName = LANGUAGE_MAP[language];
+  const ai = getAIClient();
   return ai.chats.create({
     model: MODEL_COMPLEX, 
     config: {

@@ -71,6 +71,12 @@ export const translations: Record<Language, any> = {
     nav: {
       dashboard: "Dashboard",
       uploadNew: "Upload New"
+    },
+    apiKey: {
+      title: "Connect Google AI",
+      desc: "To use Cognos, you need to connect your Google Cloud Project API key. This ensures secure access to Gemini models.",
+      connectBtn: "Connect API Key",
+      billing: "View Billing Documentation"
     }
   },
   es: {
@@ -86,7 +92,7 @@ export const translations: Record<Language, any> = {
     tools: {
       quiz: { title: "Cuestionario Interactivo", desc: "Pon a prueba tus conocimientos con preguntas generadas por IA." },
       flashcards: { title: "Tarjetas Inteligentes", desc: "Memoriza conceptos clave con tarjetas de repaso activo." },
-      plan: { title: "Plan de Estudio Adaptativo", desc: "Obtén un cronograma estructurado de 4 semanas basado en tu material." },
+      plan: { title: "Plan de Estudio Adaptativo", desc: "Obtén un cronograma estruturado de 4 semanas basado en tu material." },
       simplify: { title: "Simplificar Conceptos", desc: "Explica temas complejos en términos simples para principiantes." }
     },
     quiz: {
@@ -143,6 +149,12 @@ export const translations: Record<Language, any> = {
     nav: {
       dashboard: "Panel",
       uploadNew: "Subir Nuevo"
+    },
+    apiKey: {
+      title: "Conectar Google AI",
+      desc: "Para usar Cognos, necesitas conectar tu clave API de Google Cloud Project. Esto asegura el acceso seguro a los modelos Gemini.",
+      connectBtn: "Conectar Clave API",
+      billing: "Ver Documentación de Facturación"
     }
   },
   fr: {
@@ -215,6 +227,12 @@ export const translations: Record<Language, any> = {
     nav: {
       dashboard: "Tableau de bord",
       uploadNew: "Nouveau fichier"
+    },
+    apiKey: {
+      title: "Connecter Google AI",
+      desc: "Pour utiliser Cognos, vous devez connecter votre clé API Google Cloud Project.",
+      connectBtn: "Connecter Clé API",
+      billing: "Voir la Documentation de Facturation"
     }
   },
   de: {
@@ -287,6 +305,12 @@ export const translations: Record<Language, any> = {
     nav: {
       dashboard: "Dashboard",
       uploadNew: "Neu hochladen"
+    },
+    apiKey: {
+      title: "Google AI Verbinden",
+      desc: "Um Cognos zu nutzen, müssen Sie Ihren Google Cloud Project API-Schlüssel verbinden.",
+      connectBtn: "API-Schlüssel Verbinden",
+      billing: "Abrechnungsdokumentation anzeigen"
     }
   },
   pt: {
@@ -359,6 +383,12 @@ export const translations: Record<Language, any> = {
     nav: {
       dashboard: "Painel",
       uploadNew: "Enviar Novo"
+    },
+    apiKey: {
+      title: "Conectar Google AI",
+      desc: "Para usar o Cognos, você precisa conectar sua chave de API do Google Cloud Project.",
+      connectBtn: "Conectar Chave API",
+      billing: "Ver Documentação de Faturamento"
     }
   },
   zh: {
@@ -431,6 +461,12 @@ export const translations: Record<Language, any> = {
     nav: {
       dashboard: "仪表板",
       uploadNew: "上传新文件"
+    },
+    apiKey: {
+      title: "连接 Google AI",
+      desc: "要使用 Cognos，您需要连接您的 Google Cloud 项目 API 密钥。",
+      connectBtn: "连接 API 密钥",
+      billing: "查看计费文档"
     }
   }
 };
