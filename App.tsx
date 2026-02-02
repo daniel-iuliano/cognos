@@ -1,6 +1,6 @@
 
-import React, { useState, useRef } from 'react';
-import { Upload, BookOpen, BrainCircuit, Calendar, Layers, FileText, ChevronRight, MessageCircle, Globe, Loader2 } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Upload, BookOpen, BrainCircuit, Calendar, Layers, FileText, ChevronRight, MessageCircle, Globe, Loader2, Zap, Lock, WifiOff, X } from 'lucide-react';
 import { AppMode, QuizItem, Flashcard, StudyPlan, StudyContext, Language } from './types';
 import * as GeminiService from './services/geminiService';
 import { parseFile } from './services/fileParser';
@@ -19,6 +19,11 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [language, setLanguage] = useState<Language>('en');
+  
+  // API Key State
+  const [showSettings, setShowSettings] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+  const [isOnline, setIsOnline] = useState(false);
 
   // Data States
   const [quiz, setQuiz] = useState<QuizItem[]>([]);
@@ -29,6 +34,17 @@ const App: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const t = translations[language];
+
+  // Initialize service status
+  useEffect(() => {
+    setIsOnline(GeminiService.isOnline());
+  }, []);
+
+  const handleSaveApiKey = () => {
+    GeminiService.setApiKey(apiKey);
+    setIsOnline(GeminiService.isOnline());
+    setShowSettings(false);
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -150,7 +166,6 @@ const App: React.FC = () => {
               <div className="space-y-4">
                 <button 
                   onClick={() => {
-                    // alert(t.formatAlert);
                     fileInputRef.current?.click();
                   }}
                   disabled={isProcessing}
@@ -183,7 +198,19 @@ const App: React.FC = () => {
               </div>
               {error && <p className="mt-4 text-red-500 text-sm font-medium">{error}</p>}
             </div>
-            <p className="mt-8 text-xs text-gray-400">Fully Offline Version. No data leaves your device.</p>
+            <div className="mt-8 flex items-center gap-2 text-xs text-gray-400">
+              {isOnline ? (
+                <>
+                  <Zap size={14} className="text-yellow-500" />
+                  <span className="text-gray-600 font-medium">Cloud AI Active</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff size={14} />
+                  <span>Fully Offline Version</span>
+                </>
+              )}
+            </div>
           </div>
         );
 
@@ -283,6 +310,15 @@ const App: React.FC = () => {
             </div>
             
             <div className="flex items-center gap-4">
+               {/* API Settings */}
+               <button 
+                onClick={() => setShowSettings(true)}
+                className={`p-2 rounded-full transition-colors ${isOnline ? 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                title={t.settingsTitle}
+               >
+                 <Zap size={18} className={isOnline ? "fill-current" : ""} />
+               </button>
+
                {/* Language Selector */}
                <div className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-md">
                  <Globe size={16} className="text-gray-500" />
@@ -352,6 +388,61 @@ const App: React.FC = () => {
              language={language}
           />
         </>
+      )}
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl animate-fade-in-up">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <Zap className="text-yellow-500" /> {t.settingsTitle}
+              </h3>
+              <button onClick={() => setShowSettings(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={24} />
+              </button>
+            </div>
+            
+            <p className="text-gray-500 mb-6 text-sm leading-relaxed">
+              {t.settingsDesc}
+            </p>
+
+            <div className="space-y-4">
+               <div>
+                 <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Google Gemini API Key</label>
+                 <div className="relative">
+                   <Lock size={16} className="absolute left-3 top-3.5 text-gray-400" />
+                   <input 
+                      type="password"
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      placeholder="AIzaSy..."
+                      className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm font-mono"
+                   />
+                 </div>
+               </div>
+
+               <button 
+                 onClick={handleSaveApiKey}
+                 className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200"
+               >
+                 {t.saveKey}
+               </button>
+
+               <div className="pt-4 border-t border-gray-100 flex justify-center">
+                  {isOnline ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                      <Zap size={12} className="fill-current" /> AI Enabled
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">
+                       <WifiOff size={12} /> Offline Mode
+                    </span>
+                  )}
+               </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

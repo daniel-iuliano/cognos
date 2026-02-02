@@ -1,232 +1,580 @@
 
+import { GoogleGenAI, Type, Chat, GenerateContentResponse } from "@google/genai";
 import { QuizItem, Flashcard, StudyPlan, Language } from '../types';
 
 // ------------------------------------------------------------------
-// Local Heuristics & Helpers
+// Global State & Config
 // ------------------------------------------------------------------
 
-// Helper to split text into clean sentences
-const getSentences = (text: string): string[] => {
-  return text
-    .replace(/\s+/g, ' ')
-    .split(/[.!?]+/)
-    .map(s => s.trim())
-    .filter(s => s.length > 20 && s.length < 300); // Filter too short/long noise
-};
-
-// Heuristic to identify "definition" style sentences
-// e.g. "Photosynthesis is the process..."
-const isDefinition = (sentence: string): boolean => {
-  const indicators = [" is ", " are ", " refers to ", " defined as ", " means ", " consists of "];
-  return indicators.some(ind => sentence.includes(ind));
-};
-
-// Extract a potential term from a definition sentence
-const extractTerm = (sentence: string): string => {
-  // Simple heuristic: Take the first few words before the verb
-  const indicators = [" is ", " are ", " refers to ", " defined as ", " means "];
-  for (const ind of indicators) {
-    if (sentence.includes(ind)) {
-      const parts = sentence.split(ind);
-      if (parts[0].length < 50) return parts[0].trim();
-    }
-  }
-  return "Concept";
-};
-
-// Shuffle array
-const shuffle = <T>(array: T[]): T[] => {
-  return array.sort(() => Math.random() - 0.5);
-};
-
-// ------------------------------------------------------------------
-// Service Functions (Offline Implementations)
-// ------------------------------------------------------------------
+let genAI: GoogleGenAI | null = null;
+let apiKey: string | null = null;
 
 export const setApiKey = (key: string) => {
-  // No-op for offline version
+  if (key && key.trim().length > 0) {
+    apiKey = key;
+    genAI = new GoogleGenAI({ apiKey: key });
+  } else {
+    apiKey = null;
+    genAI = null;
+  }
 };
 
-export const generateQuizFromText = async (text: string, language: Language = 'en', numQuestions: number = 5): Promise<QuizItem[]> => {
-  // Simulate processing delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
+export const isOnline = (): boolean => !!genAI;
 
-  const sentences = getSentences(text);
-  const defs = sentences.filter(isDefinition);
-  
-  // If not enough definitions, use random sentences
-  const pool = defs.length >= numQuestions ? defs : sentences;
-  const selected = shuffle(pool).slice(0, numQuestions);
+// ------------------------------------------------------------------
+// Language Data & Templates (Offline Fallbacks)
+// ------------------------------------------------------------------
 
-  return selected.map(sentence => {
-    const term = extractTerm(sentence);
-    // Create a cloze deletion question
-    const questionText = sentence.replace(term, "_______");
-    
-    // Generate distractors from other terms in the text
-    const otherTerms = shuffle(sentences)
-      .slice(0, 3)
-      .map(s => extractTerm(s))
-      .filter(t => t !== term && t !== "Concept");
-    
-    // Fallback if not enough terms found
-    while (otherTerms.length < 3) {
-      otherTerms.push("Variable"); 
-    }
+const STOP_WORDS: Record<Language, Set<string>> = {
+  en: new Set(["a", "an", "the", "and", "or", "but", "is", "are", "was", "were", "of", "in", "on", "to", "with", "by", "for", "it", "this", "that", "these", "those", "as", "at", "from", "which", "who", "what", "where", "when", "how", "can", "will", "be", "has", "have", "had", "do", "does", "did", "not", "we", "you", "they", "he", "she", "i", "my", "your", "their", "his", "her", "its", "about", "into", "through", "during", "before", "after", "above", "below", "between", "under", "up", "down", "out", "off", "over", "again", "further", "then", "once", "here", "there", "why", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "only", "own", "same", "so", "than", "too", "very", "just", "should", "now", "also", "use", "used", "using", "uses"]),
+  es: new Set(["el", "la", "los", "las", "un", "una", "unos", "unas", "y", "o", "pero", "si", "de", "en", "a", "con", "por", "para", "es", "son", "fue", "fueron", "que", "se", "su", "sus", "lo", "al", "del", "como", "más", "este", "esta", "ese", "esa", "esos", "esas", "todo", "toda", "todos", "todas", "muy", "sin", "sobre", "entre", "ya", "cuando", "donde", "quien", "porque", "está", "están", "ser", "haber", "hacer", "también", "además", "así", "entonces", "luego", "bien", "aunque", "esto", "eso", "aquello", "mi", "mis", "tu", "tus", "nos", "vos", "ellos", "ellas"]),
+  fr: new Set(["le", "la", "les", "un", "une", "des", "et", "ou", "mais", "si", "de", "en", "à", "avec", "par", "pour", "est", "sont", "été", "que", "qui", "ce", "se", "sa", "ses", "son", "du", "au", "aux", "comme", "plus", "tout", "toute", "très", "sans", "sur", "entre", "quand", "où", "car", "il", "elle", "ils", "elles", "ne", "pas", "avoir", "être", "faire", "cette", "ces", "aussi", "ainsi", "donc"]),
+  de: new Set(["der", "die", "das", "den", "dem", "des", "und", "oder", "aber", "wenn", "von", "in", "zu", "mit", "durch", "für", "ist", "sind", "war", "waren", "dass", "das", "sich", "ihr", "ihre", "sein", "seine", "wie", "als", "mehr", "alle", "sehr", "ohne", "über", "unter", "zwischen", "wann", "wo", "wer", "warum", "weil", "es", "sie", "er", "wir", "nicht", "haben", "werden", "können", "auch", "dann", "damit"]),
+  pt: new Set(["o", "a", "os", "as", "um", "uma", "uns", "umas", "e", "ou", "mas", "se", "de", "em", "a", "com", "por", "para", "é", "são", "foi", "foram", "que", "se", "seu", "sua", "seus", "suas", "do", "da", "ao", "como", "mais", "este", "esta", "esse", "essa", "todo", "toda", "muito", "sem", "sobre", "entre", "quando", "onde", "quem", "porque", "está", "estão", "ser", "ter", "fazer", "também", "assim", "então"]),
+  zh: new Set(["的", "了", "在", "是", "我", "有", "和", "就", "不", "人", "都", "一", "一个", "上", "也", "很", "到", "说", "要", "去", "你", "会", "着", "没有", "看", "好", "自己", "这", "那", "个", "为", "之"])
+};
 
-    const options = shuffle([term, ...otherTerms.slice(0, 3)]);
+const TEMPLATES: Record<Language, any> = {
+  en: {
+    fillBlank: 'Fill in the blank: "{0}"',
+    explanation: 'The original sentence was: "{0}"',
+    contextCat: "Context",
+    defCat: "Definition",
+    planTitle: "Structured Study Roadmap",
+    planGoal: "Master the core vocabulary and concepts extracted from your text.",
+    keyTakeaways: "**Key Takeaways (Extracted):**",
+    chatCatch: "I didn't catch that. Could you please ask a more specific question about the text?",
+    chatIntro: "Hello! I'm ready to help you study your uploaded notes.",
+    chatRef: 'Based on your notes: "{0}"',
+    chatNoRef: "I couldn't find a specific reference to that in the text. Try using keywords from your document.",
+    chatSuggest: 'I suggest checking the Simplify tab, but here is a key thought: "{0}"'
+  },
+  es: {
+    fillBlank: 'Completa el espacio: "{0}"',
+    explanation: 'La frase original era: "{0}"',
+    contextCat: "Contexto",
+    defCat: "Definición",
+    planTitle: "Hoja de Ruta de Estudio Estructurada",
+    planGoal: "Dominar el vocabulario y los conceptos clave extraídos de su texto.",
+    keyTakeaways: "**Puntos Clave (Extraídos):**",
+    chatCatch: "No entendí eso. ¿Podrías hacer una pregunta más específica sobre el texto?",
+    chatIntro: "¡Hola! Estoy listo para ayudarte a estudiar tus notas.",
+    chatRef: 'Basado en tus notas: "{0}"',
+    chatNoRef: "No encontré una referencia específica a eso en el texto. Intenta usar palabras clave de tu documento.",
+    chatSuggest: 'Sugiero revisar la pestaña Simplificar, pero aquí hay una idea clave: "{0}"'
+  },
+  fr: {
+    fillBlank: 'Remplissez le vide : "{0}"',
+    explanation: 'La phrase originale était : "{0}"',
+    contextCat: "Contexte",
+    defCat: "Définition",
+    planTitle: "Feuille de Route d'Étude Structurée",
+    planGoal: "Maîtriser le vocabulaire de base et les concepts extraits de votre texte.",
+    keyTakeaways: "**Points Clés (Extraits) :**",
+    chatCatch: "Je n'ai pas saisi. Pourriez-vous poser une question plus précise sur le texte ?",
+    chatIntro: "Bonjour ! Je suis prêt à vous aider à étudier vos notes.",
+    chatRef: 'Basé sur vos notes : "{0}"',
+    chatNoRef: "Je n'ai pas trouvé de référence spécifique à cela dans le texte. Essayez d'utiliser des mots-clés de votre document.",
+    chatSuggest: 'Je suggère de vérifier l\'onglet Simplifier, mais voici une idée clé : "{0}"'
+  },
+  de: {
+    fillBlank: 'Füllen Sie die Lücke: "{0}"',
+    explanation: 'Der ursprüngliche Satz lautete: "{0}"',
+    contextCat: "Kontext",
+    defCat: "Definition",
+    planTitle: "Strukturierter Lernplan",
+    planGoal: "Beherrschen Sie das Kernvokabular und die Konzepte aus Ihrem Text.",
+    keyTakeaways: "**Wichtige Erkenntnisse (Extrahiert):**",
+    chatCatch: "Das habe ich nicht verstanden. Könnten Sie bitte eine spezifischere Frage zum Text stellen?",
+    chatIntro: "Hallo! Ich bin bereit, Ihnen beim Lernen Ihrer Notizen zu helfen.",
+    chatRef: 'Basierend auf Ihren Notizen: "{0}"',
+    chatNoRef: "Ich konnte im Text keinen spezifischen Hinweis darauf finden. Versuchen Sie es mit Schlüsselwörtern aus Ihrem Dokument.",
+    chatSuggest: 'Ich schlage vor, den Tab Vereinfachen zu prüfen, aber hier ist ein wichtiger Gedanke: "{0}"'
+  },
+  pt: {
+    fillBlank: 'Preencha a lacuna: "{0}"',
+    explanation: 'A frase original era: "{0}"',
+    contextCat: "Contexto",
+    defCat: "Definição",
+    planTitle: "Roteiro de Estudo Estruturado",
+    planGoal: "Dominar o vocabulário e conceitos fundamentais extraídos do seu texto.",
+    keyTakeaways: "**Principais Pontos (Extraídos):**",
+    chatCatch: "Não entendi. Poderia fazer uma pergunta mais específica sobre o texto?",
+    chatIntro: "Olá! Estou pronto para ajudar você a estudar suas anotações.",
+    chatRef: 'Com base em suas anotações: "{0}"',
+    chatNoRef: "Não encontrei uma referência específica a isso no texto. Tente usar palavras-chave do seu documento.",
+    chatSuggest: 'Sugiro verificar a aba Simplificar, mas aqui está um pensamento chave: "{0}"'
+  },
+  zh: {
+    fillBlank: '填空："{0}"',
+    explanation: '原句是："{0}"',
+    contextCat: "语境",
+    defCat: "定义",
+    planTitle: "结构化学习路线图",
+    planGoal: "掌握从文本中提取的核心词汇和概念。",
+    keyTakeaways: "**主要要点（摘录）：**",
+    chatCatch: "我没听懂。请问您能问一个关于文本的具体问题吗？",
+    chatIntro: "你好！我准备好帮您学习上传的笔记了。",
+    chatRef: '根据您的笔记："{0}"',
+    chatNoRef: "我在文中找不到具体的参考。尝试使用文档中的关键词。",
+    chatSuggest: '我建议查看简化标签，但这是一个关键想法："{0}"'
+  }
+};
 
-    return {
-      question: `Complete the statement: "${questionText}"`,
-      options: options,
-      correctAnswerIndex: options.indexOf(term),
-      explanation: `The full statement is: "${sentence}"`
-    };
+const DEFINITION_REGEX: Record<Language, RegExp> = {
+  en: /^([A-Z][\w\s-]{2,30})(:| is a | is the | refers to | defined as )(.+)/i,
+  es: /^([A-ZÁ-Ü][\w\s\u00C0-\u00FF-]{2,30})(:| es un | es una | es el | es la | se refiere a | se define como )(.+)/iu,
+  fr: /^([A-Z][\w\s\u00C0-\u00FF-]{2,30})(:| est un | est une | est le | est la | désigne | se définit comme )(.+)/iu,
+  de: /^([A-ZÄÖÜ][\w\s\u00C0-\u00FF-]{2,30})(:| ist ein | ist eine | ist der | ist die | bezeichnet | definiert als )(.+)/iu,
+  pt: /^([A-ZÁ-Ü][\w\s\u00C0-\u00FF-]{2,30})(:| é um | é uma | é o | é a | refere-se a | definido como )(.+)/iu,
+  zh: /^([^\s:：]{2,10})([:：]|是|是指|定义为)(.+)/ 
+};
+
+// ------------------------------------------------------------------
+// Offline NLP Utilities
+// ------------------------------------------------------------------
+
+const formatString = (template: string, ...args: string[]): string => {
+  return template.replace(/{(\d+)}/g, (match, number) => {
+    return typeof args[number] !== 'undefined' ? args[number] : match;
   });
+};
+
+const tokenize = (text: string, lang: Language): string[] => {
+  const stopWords = STOP_WORDS[lang] || STOP_WORDS['en'];
+  const normalized = text.normalize("NFC").toLowerCase();
+  
+  if (lang === 'zh') {
+    return normalized.split('').filter(char => !stopWords.has(char) && /[\u4e00-\u9fa5a-zA-Z0-9]/.test(char));
+  }
+  
+  // Use Unicode property escapes to handle accented characters correctly
+  // \p{L} matches any unicode letter, \p{N} any number
+  return normalized
+    .replace(/[^\p{L}\p{N}\s-]/gu, " ") 
+    .split(/\s+/)
+    .filter(w => w.length > 2 && !stopWords.has(w));
+};
+
+const splitSentences = (text: string, lang: Language): string[] => {
+  if (lang === 'zh') {
+    return text.replace(/([。！？])\s*/g, "$1|").split("|").map(s => s.trim()).filter(s => s.length > 5);
+  }
+  
+  // Normalized text for consistent processing
+  const normalized = text.normalize("NFC");
+  
+  // Split by punctuation followed by uppercase letter (Unicode aware)
+  // Covers . ! ? followed by whitespace and an Uppercase Letter (\p{Lu})
+  return normalized
+    .replace(/([.!?])\s*(?=[\p{Lu}])/gu, "$1|")
+    .split("|")
+    .map(s => s.trim())
+    .filter(s => s.length > 20 && s.length < 500); 
+};
+
+const getWordFrequencies = (text: string, lang: Language): Record<string, number> => {
+  const tokens = tokenize(text, lang);
+  const freq: Record<string, number> = {};
+  tokens.forEach(t => freq[t] = (freq[t] || 0) + 1);
+  return freq;
+};
+
+const getTopKeywords = (text: string, lang: Language, n: number = 20): string[] => {
+  const freq = getWordFrequencies(text, lang);
+  return Object.entries(freq).sort(([, a], [, b]) => b - a).slice(0, n).map(([w]) => w);
+};
+
+const scoreSentence = (sentence: string, freqMap: Record<string, number>, lang: Language): number => {
+  const tokens = tokenize(sentence, lang);
+  if (tokens.length === 0) return 0;
+  const score = tokens.reduce((sum, token) => sum + (freqMap[token] || 0), 0);
+  return score / tokens.length;
+};
+
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+const shuffle = <T>(array: T[]): T[] => {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
+
+// ------------------------------------------------------------------
+// Main Service Exports (Dual Mode)
+// ------------------------------------------------------------------
+
+export const generateQuizFromText = async (text: string, language: Language = 'en', numQuestions: number = 5): Promise<QuizItem[]> => {
+  if (isOnline() && genAI) {
+    return generateQuizOnline(text, language, numQuestions);
+  }
+  return generateQuizOffline(text, language, numQuestions);
 };
 
 export const generateFlashcardsFromText = async (text: string, language: Language = 'en', count: number = 10): Promise<Flashcard[]> => {
-  await new Promise(resolve => setTimeout(resolve, 800));
+  if (isOnline() && genAI) {
+    return generateFlashcardsOnline(text, language, count);
+  }
+  return generateFlashcardsOffline(text, language, count);
+};
 
-  const sentences = getSentences(text);
-  const defs = sentences.filter(isDefinition);
-  const pool = defs.length > 0 ? defs : sentences;
-  const selected = shuffle(pool).slice(0, count);
+export const generateStudyPlanFromText = async (text: string, language: Language = 'en'): Promise<StudyPlan> => {
+  if (isOnline() && genAI) {
+    return generateStudyPlanOnline(text, language);
+  }
+  return generateStudyPlanOffline(text, language);
+};
 
-  return selected.map(s => {
-    const term = extractTerm(s);
-    // Remove the term from the back of the card if it starts the sentence
-    let definition = s;
-    const indicators = [" is ", " are ", " refers to "];
-    for (const ind of indicators) {
-      if (s.includes(ind)) {
-         const parts = s.split(ind);
-         if (parts[0].trim() === term) {
-             definition = parts.slice(1).join(ind).trim();
-             // Capitalize first letter
-             definition = definition.charAt(0).toUpperCase() + definition.slice(1);
-         }
+export const simplifyText = async (text: string, language: Language = 'en'): Promise<string> => {
+  if (isOnline() && genAI) {
+    return simplifyTextOnline(text, language);
+  }
+  return simplifyTextOffline(text, language);
+};
+
+export const createChatSession = (initialContext: string, language: Language = 'en'): any => {
+  if (isOnline() && genAI) {
+    return createChatSessionOnline(initialContext, language);
+  }
+  return createChatSessionOffline(initialContext, language);
+};
+
+// ------------------------------------------------------------------
+// Online Implementations (Gemini API)
+// ------------------------------------------------------------------
+
+const generateQuizOnline = async (text: string, language: Language, numQuestions: number): Promise<QuizItem[]> => {
+  if (!genAI) throw new Error("AI not initialized");
+  
+  const prompt = `Generate ${numQuestions} multiple-choice quiz questions based on the text below. 
+  Language: ${language}. 
+  Return JSON format matching the schema.
+  
+  Text: ${text.substring(0, 30000)}...`; 
+
+  const response = await genAI.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            question: { type: Type.STRING },
+            options: { type: Type.ARRAY, items: { type: Type.STRING } },
+            correctAnswerIndex: { type: Type.INTEGER },
+            explanation: { type: Type.STRING }
+          },
+          required: ["question", "options", "correctAnswerIndex", "explanation"]
+        }
       }
     }
+  });
+
+  return JSON.parse(response.text || "[]");
+};
+
+const generateFlashcardsOnline = async (text: string, language: Language, count: number): Promise<Flashcard[]> => {
+  if (!genAI) throw new Error("AI not initialized");
+
+  const prompt = `Generate ${count} flashcards (front/back) from the text. 
+  Language: ${language}.
+  Return JSON.
+  Text: ${text.substring(0, 30000)}...`;
+
+  const response = await genAI.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            front: { type: Type.STRING },
+            back: { type: Type.STRING },
+            category: { type: Type.STRING }
+          },
+          required: ["front", "back"]
+        }
+      }
+    }
+  });
+
+  return JSON.parse(response.text || "[]");
+};
+
+const generateStudyPlanOnline = async (text: string, language: Language): Promise<StudyPlan> => {
+  if (!genAI) throw new Error("AI not initialized");
+
+  const prompt = `Create a 4-week study plan based on this text. Language: ${language}. Return JSON.
+  Text: ${text.substring(0, 30000)}...`;
+
+  const response = await genAI.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          goal: { type: Type.STRING },
+          items: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                week: { type: Type.INTEGER },
+                topic: { type: Type.STRING },
+                description: { type: Type.STRING },
+                estimatedHours: { type: Type.INTEGER },
+                priority: { type: Type.STRING, enum: ["High", "Medium", "Low"] }
+              },
+              required: ["week", "topic", "description", "estimatedHours", "priority"]
+            }
+          }
+        },
+        required: ["title", "goal", "items"]
+      }
+    }
+  });
+
+  return JSON.parse(response.text || "{}");
+};
+
+const simplifyTextOnline = async (text: string, language: Language): Promise<string> => {
+  if (!genAI) throw new Error("AI not initialized");
+  
+  const prompt = `Summarize the following text in a clear, concise manner using bullet points and Markdown formatting. 
+  Language: ${language}.
+  Text: ${text.substring(0, 30000)}...`;
+
+  const response = await genAI.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: prompt
+  });
+
+  return response.text || "";
+};
+
+const createChatSessionOnline = (initialContext: string, language: Language) => {
+  if (!genAI) throw new Error("AI not initialized");
+
+  const chat = genAI.chats.create({
+    model: 'gemini-3-flash-preview',
+    config: {
+      systemInstruction: `You are a helpful study assistant. Answer questions based ONLY on the provided context. Context: ${initialContext.substring(0, 30000)}... Language: ${language}`
+    }
+  });
+
+  return chat;
+};
+
+// ------------------------------------------------------------------
+// Offline Implementations (Heuristics)
+// ------------------------------------------------------------------
+
+const generateQuizOffline = async (text: string, language: Language, numQuestions: number): Promise<QuizItem[]> => {
+  await new Promise(resolve => setTimeout(resolve, 1500)); 
+
+  const sentences = splitSentences(text, language);
+  const topKeywords = getTopKeywords(text, language, 50); 
+  const t = TEMPLATES[language];
+
+  // Improved Heuristic: Score sentences by keyword density to find "important" facts
+  const freqMap = getWordFrequencies(text, language);
+  const scoredSentences = sentences
+    .map(s => ({ text: s, score: scoreSentence(s, freqMap, language) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, numQuestions * 3); 
+
+  const selected = shuffle(scoredSentences).slice(0, numQuestions);
+
+  return selected.map(({ text: sentence }) => {
+    const tokens = tokenize(sentence, language);
+    const validKeywords = tokens.filter(t => topKeywords.includes(t));
+    
+    // Pick the longest keyword as it is often more significant
+    const targetWord = validKeywords.sort((a, b) => b.length - a.length)[0] || tokens[0];
+
+    // Escape regex characters
+    const escaped = targetWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    // Use lookbehind/lookahead (or simplified boundaries) to avoid replacing sub-words
+    // (?<!\p{L}) checks that the preceding char is NOT a letter.
+    // (?!\p{L}) checks that the following char is NOT a letter.
+    // This works for "año", "canción" etc. correctly.
+    const regex = new RegExp(`(?<!\\p{L})${escaped}(?!\\p{L})`, 'gui');
+    
+    const questionText = sentence.replace(regex, "_______");
+
+    let distractors = topKeywords.filter(k => k !== targetWord);
+    const similarStart = distractors.filter(k => k[0] === targetWord[0]);
+    
+    distractors = shuffle(similarStart.length >= 3 ? similarStart : distractors).slice(0, 3);
+    
+    while (distractors.length < 3) {
+      distractors.push("variable"); 
+    }
+
+    const options = shuffle([targetWord, ...distractors]);
 
     return {
-      front: term,
-      back: definition,
-      category: "General"
+      question: formatString(t.fillBlank, questionText),
+      options: options,
+      correctAnswerIndex: options.indexOf(targetWord),
+      explanation: formatString(t.explanation, sentence)
     };
   });
 };
 
-export const generateStudyPlanFromText = async (text: string, language: Language = 'en'): Promise<StudyPlan> => {
-  await new Promise(resolve => setTimeout(resolve, 1200));
+const generateFlashcardsOffline = async (text: string, language: Language, count: number): Promise<Flashcard[]> => {
+  await new Promise(resolve => setTimeout(resolve, 1500));
 
-  // Extract potential topics based on capitalization or frequency
-  const sentences = getSentences(text);
-  const topics: string[] = [];
-  
-  // Simple topic extractor: find capitalized words that appear frequently? 
-  // For offline simplicity, we'll just grab subjects from definition sentences or random segments.
-  const potentialTopics = sentences
-    .filter(isDefinition)
-    .map(extractTerm)
-    .filter(t => t !== "Concept" && t.length > 3);
-    
-  const uniqueTopics = Array.from(new Set(potentialTopics));
-  const availableTopics = uniqueTopics.length > 0 ? uniqueTopics : ["Fundamentals", "Core Concepts", "Advanced Theory", "Practical Applications"];
+  const sentences = splitSentences(text, language);
+  const cards: Flashcard[] = [];
+  const usedTerms = new Set<string>();
+  const t = TEMPLATES[language];
+  const regex = DEFINITION_REGEX[language] || DEFINITION_REGEX['en'];
 
-  // Ensure we have at least 4 topics
-  while (availableTopics.length < 4) {
-    availableTopics.push(`Section ${availableTopics.length + 1}`);
+  // Strategy 1: Regex
+  for (const s of sentences) {
+    if (cards.length >= count) break;
+    const match = s.match(regex);
+    if (match) {
+      const term = match[1].trim();
+      // Only add if term length is reasonable
+      if (usedTerms.has(term) || term.split(' ').length > 6) continue;
+      
+      let def = match[3].trim();
+      if (def.endsWith('.') || def.endsWith('。')) def = def.slice(0, -1);
+      
+      cards.push({ front: term, back: capitalize(def), category: t.defCat });
+      usedTerms.add(term);
+    }
   }
 
-  const shuffledTopics = shuffle(availableTopics);
+  // Strategy 2: High Score Context
+  if (cards.length < count) {
+    const freqMap = getWordFrequencies(text, language);
+    const topKeywords = getTopKeywords(text, language, 30);
+    const scoredSentences = sentences
+      .map(s => ({ text: s, score: scoreSentence(s, freqMap, language) }))
+      .sort((a, b) => b.score - a.score);
 
-  return {
-    title: "Generated Study Plan",
-    goal: "Master the key concepts extracted from your document.",
-    items: [
-      {
-        week: 1,
-        topic: shuffledTopics[0] || "Introduction & Basics",
-        description: "Focus on understanding definitions and vocabulary found in the introductory sections.",
-        estimatedHours: 5,
-        priority: 'High'
-      },
-      {
-        week: 2,
-        topic: shuffledTopics[1] || "Core Mechanisms",
-        description: "Deep dive into the structural components and how they relate to the main subject.",
-        estimatedHours: 4,
-        priority: 'Medium'
-      },
-      {
-        week: 3,
-        topic: shuffledTopics[2] || "Analysis & Application",
-        description: "Apply the concepts to examples found in the text and practice problem-solving.",
-        estimatedHours: 6,
-        priority: 'High'
-      },
-      {
-        week: 4,
-        topic: shuffledTopics[3] || "Review & Synthesis",
-        description: "Review all generated flashcards and quizzes to consolidate memory.",
-        estimatedHours: 3,
-        priority: 'Low'
+    for (const item of scoredSentences) {
+      if (cards.length >= count) break;
+      const tokens = tokenize(item.text, language);
+      const keywordsInSentence = tokens.filter(t => topKeywords.includes(t));
+      if (keywordsInSentence.length > 0) {
+        const term = keywordsInSentence.sort((a, b) => b.length - a.length)[0]; 
+        if (usedTerms.has(term)) continue;
+        cards.push({ front: capitalize(term), back: item.text, category: t.contextCat });
+        usedTerms.add(term);
       }
-    ]
-  };
+    }
+  }
+  return cards;
 };
 
-export const simplifyText = async (text: string, language: Language = 'en'): Promise<string> => {
-  await new Promise(resolve => setTimeout(resolve, 1000));
+const generateStudyPlanOffline = async (text: string, language: Language): Promise<StudyPlan> => {
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  const sentences = splitSentences(text, language);
+  const chunkSize = Math.ceil(sentences.length / 4);
+  const chunks: string[][] = [[], [], [], []];
+  sentences.forEach((s, i) => chunks[Math.min(Math.floor(i / chunkSize), 3)].push(s));
 
-  // Offline summarization is hard. We will return the most "dense" paragraphs.
-  const sentences = getSentences(text);
-  
-  // Pick the first few sentences and a few random ones from the middle to act as a "digest"
-  const intro = sentences.slice(0, 3).join(' ');
-  const middle = sentences.slice(Math.floor(sentences.length / 2), Math.floor(sentences.length / 2) + 2).join(' ');
-  const conclusion = sentences.slice(-2).join(' ');
+  const planItems = chunks.map((chunkSentences, idx) => {
+    const chunkText = chunkSentences.join(" ");
+    const keywords = getTopKeywords(chunkText, language, 5);
+    const topic = keywords.length > 0 ? capitalize(keywords[0]) : `Section ${idx + 1}`;
+    const freqMap = getWordFrequencies(chunkText, language);
+    const bestSentence = chunkSentences.reduce((best, current) => scoreSentence(current, freqMap, language) > scoreSentence(best, freqMap, language) ? current : best, chunkSentences[0] || "");
+    const desc = bestSentence.length > 100 ? bestSentence.substring(0, 97) + "..." : bestSentence;
+    const priorities: ('High' | 'Medium' | 'Low')[] = ['High', 'Medium', 'High', 'Low'];
 
-  return `**Summary Digest:**\n\n${intro}\n\n...\n\n${middle}\n\n...\n\n${conclusion}\n\n*(Note: This is an offline extraction. Full semantic simplification requires cloud AI.)*`;
+    return {
+      week: idx + 1,
+      topic: topic,
+      description: desc || "Review content.",
+      estimatedHours: 2 + Math.floor(Math.random() * 4), 
+      priority: priorities[idx]
+    };
+  });
+
+  const t = TEMPLATES[language];
+  return { title: t.planTitle, goal: t.planGoal, items: planItems };
 };
 
-// Mock Chat implementation
-export const createChatSession = (initialContext: string, language: Language = 'en'): any => {
-  const sentences = getSentences(initialContext);
+const simplifyTextOffline = async (text: string, language: Language): Promise<string> => {
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  const sentences = splitSentences(text, language);
+  const freqMap = getWordFrequencies(text, language);
+  const rankedSentences = sentences
+    .map((s, index) => ({ text: s, score: scoreSentence(s, freqMap, language), originalIndex: index }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5) 
+    .sort((a, b) => a.originalIndex - b.originalIndex);
+  const summary = rankedSentences.map(item => `• ${item.text}`).join("\n\n");
+  const t = TEMPLATES[language];
+  return `${t.keyTakeaways}\n\n${summary}`;
+};
+
+const createChatSessionOffline = (initialContext: string, language: Language): any => {
+  const sentences = splitSentences(initialContext, language);
+  const freqMap = getWordFrequencies(initialContext, language);
+  const t = TEMPLATES[language];
 
   return {
     sendMessageStream: async function* ({ message }: { message: string }) {
-      await new Promise(resolve => setTimeout(resolve, 600)); // Thinking delay
-
-      const query = message.toLowerCase();
+      await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 500));
+      const queryTokens = tokenize(message, language);
       
-      // 1. Keyword Search
-      const keywords = query.split(' ').filter(w => w.length > 4);
-      const matches = sentences.filter(s => {
-        const lowerS = s.toLowerCase();
-        return keywords.some(k => lowerS.includes(k));
-      });
-
-      let responseText = "";
-
-      if (matches.length > 0) {
-        // Return top 3 matches
-        const topMatches = matches.slice(0, 3).join(" ");
-        responseText = `Here is what I found in your notes regarding that:\n\n"${topMatches}"`;
-      } else if (query.includes("hello") || query.includes("hi")) {
-        responseText = "Hello! I am your offline study assistant. Ask me to find specific info in your notes.";
-      } else if (query.includes("summary")) {
-        responseText = "I can help you review. Look at the Simplify tab for a digest of the text.";
-      } else {
-        responseText = "I couldn't find a specific match for that in the uploaded text. Try using specific keywords from your document.";
+      if (queryTokens.length === 0) {
+        yield { text: t.chatCatch };
+        return;
       }
 
-      // Stream the response character by character or chunk by chunk to simulate AI
-      const chunkSize = 10;
-      for (let i = 0; i < responseText.length; i += chunkSize) {
-        await new Promise(resolve => setTimeout(resolve, 20));
-        yield { text: responseText.slice(i, i + chunkSize) };
+      const matches = sentences.map(s => {
+        const sTokens = tokenize(s, language);
+        const intersection = sTokens.filter(t => queryTokens.includes(t)).length;
+        const union = new Set([...sTokens, ...queryTokens]).size;
+        let score = union === 0 ? 0 : intersection / union;
+        
+        if (s.toLowerCase().includes(message.toLowerCase())) score += 0.5;
+
+        return { text: s, score };
+      });
+
+      const bestMatches = matches.filter(m => m.score > 0).sort((a, b) => b.score - a.score);
+
+      let response = "";
+      if (bestMatches.length > 0) {
+        const topText = bestMatches.slice(0, 2).map(m => m.text).join(" ");
+        response = formatString(t.chatRef, topText);
+      } else {
+        const lowerMsg = message.toLowerCase();
+        if (lowerMsg.match(/(hello|hi|hola|bonjour|hallo|olá|你好)/)) {
+          response = t.chatIntro;
+        } else if (lowerMsg.match(/(summary|explain|resumen|résumé|zusammenfassung|resumo|摘要)/)) {
+           const topSentence = sentences.map(s => ({ s, score: scoreSentence(s, freqMap, language) })).sort((a, b) => b.score - a.score)[0]?.s || "";
+           response = formatString(t.chatSuggest, topSentence);
+        } else {
+          response = t.chatNoRef;
+        }
+      }
+
+      const chunkSize = 5;
+      for (let i = 0; i < response.length; i += chunkSize) {
+        await new Promise(resolve => setTimeout(resolve, 15));
+        yield { text: response.slice(i, i + chunkSize) };
       }
     }
   };

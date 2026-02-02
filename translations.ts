@@ -12,6 +12,9 @@ export const translations: Record<Language, any> = {
     pastePlaceholder: "Paste your text content here...",
     dashboardWelcome: "Welcome Back",
     studying: "Currently studying:",
+    settingsTitle: "AI Settings",
+    settingsDesc: "This app works offline by default. To enable advanced AI features (powered by Gemini), enter your API key below.",
+    saveKey: "Save & Enable AI",
     tools: {
       quiz: { title: "Interactive Quiz", desc: "Test your knowledge with auto-generated questions." },
       flashcards: { title: "Smart Flashcards", desc: "Memorize key concepts with active recall cards." },
@@ -63,10 +66,10 @@ export const translations: Record<Language, any> = {
       regenerate: "Regenerate"
     },
     chat: {
-      title: "Offline Assistant",
-      welcome: "Hi! I'm Cognos (Offline Mode). I can help you find keywords in your notes.",
-      thinking: "Searching...",
-      placeholder: "Search for a keyword...",
+      title: "Study Assistant",
+      welcome: "Hi! I'm Cognos. Ask me anything about your notes.",
+      thinking: "Thinking...",
+      placeholder: "Ask a question...",
       error: "Sorry, I encountered an error."
     },
     nav: {
@@ -84,14 +87,17 @@ export const translations: Record<Language, any> = {
     pastePlaceholder: "Pega tu contenido de texto aquí...",
     dashboardWelcome: "Bienvenido de nuevo",
     studying: "Estudiando actualmente:",
+    settingsTitle: "Configuración IA",
+    settingsDesc: "Esta app funciona offline. Para activar funciones avanzadas de IA (Gemini), ingresa tu clave API.",
+    saveKey: "Guardar y Activar IA",
     tools: {
       quiz: { title: "Cuestionario Interactivo", desc: "Pon a prueba tus conocimientos con preguntas autogeneradas." },
       flashcards: { title: "Tarjetas Inteligentes", desc: "Memoriza conceptos clave con tarjetas de repaso activo." },
-      plan: { title: "Plan de Estudio Adaptativo", desc: "Obtén un cronograma estruturado de 4 semanas." },
+      plan: { title: "Plan de Estudio Adaptativo", desc: "Obtén un cronograma estructurado de 4 semanas." },
       simplify: { title: "Resumen de Contenido", desc: "Obtén un resumen de los conceptos más importantes." }
     },
     quiz: {
-      noData: "Aún no hay cuestionario.",
+      noData: "No hay cuestionarios disponibles.",
       generate: "Generar Cuestionario",
       generating: "Generando...",
       completed: "¡Cuestionario Completado!",
@@ -100,13 +106,13 @@ export const translations: Record<Language, any> = {
       retry: "Reintentar",
       new: "Nuevo Cuestionario",
       question: "Pregunta",
-      score: "Puntaje",
+      score: "Puntuación",
       explanation: "Explicación:",
       next: "Siguiente",
       finish: "Finalizar"
     },
     flashcards: {
-      noData: "Aún no hay tarjetas.",
+      noData: "No hay tarjetas disponibles.",
       generate: "Generar Tarjetas",
       creating: "Creando Mazos...",
       card: "Tarjeta",
@@ -118,7 +124,7 @@ export const translations: Record<Language, any> = {
       newDeck: "Generar Nuevo Mazo"
     },
     plan: {
-      noData: "Aún no hay plan de estudio.",
+      noData: "No hay plan de estudio disponible.",
       create: "Crear Plan de Estudio",
       designing: "Diseñando Plan...",
       goal: "Meta:",
@@ -135,10 +141,10 @@ export const translations: Record<Language, any> = {
       regenerate: "Regenerar"
     },
     chat: {
-      title: "Asistente Offline",
-      welcome: "¡Hola! Soy Cognos (Modo Offline). Puedo ayudarte a buscar palabras clave.",
-      thinking: "Buscando...",
-      placeholder: "Buscar palabra clave...",
+      title: "Asistente de Estudio",
+      welcome: "¡Hola! Soy Cognos. Pregúntame sobre tus notas.",
+      thinking: "Pensando...",
+      placeholder: "Haz una pregunta...",
       error: "Lo siento, encontré un error."
     },
     nav: {
@@ -156,6 +162,9 @@ export const translations: Record<Language, any> = {
     pastePlaceholder: "Collez votre texte ici...",
     dashboardWelcome: "Bon retour",
     studying: "Étude en cours :",
+    settingsTitle: "Paramètres IA",
+    settingsDesc: "Cette appli fonctionne hors ligne. Pour activer l'IA avancée (Gemini), entrez votre clé API.",
+    saveKey: "Enregistrer et Activer IA",
     tools: {
       quiz: { title: "Quiz Interactif", desc: "Testez vos connaissances avec des questions auto-générées." },
       flashcards: { title: "Cartes Mémoire", desc: "Mémorisez les concepts clés avec le rappel actif." },
@@ -207,10 +216,10 @@ export const translations: Record<Language, any> = {
       regenerate: "Régénérer"
     },
     chat: {
-      title: "Assistant Hors Ligne",
-      welcome: "Salut ! Je suis Cognos (Hors Ligne). Je peux trouver des mots-clés.",
-      thinking: "Recherche...",
-      placeholder: "Chercher un mot-clé...",
+      title: "Assistant d'Étude",
+      welcome: "Salut ! Je suis Cognos. Posez-moi des questions.",
+      thinking: "Réflexion...",
+      placeholder: "Posez une question...",
       error: "Désolé, une erreur s'est produite."
     },
     nav: {
@@ -228,6 +237,9 @@ export const translations: Record<Language, any> = {
     pastePlaceholder: "Fügen Sie Ihren Text hier ein...",
     dashboardWelcome: "Willkommen zurück",
     studying: "Aktuell wird gelernt:",
+    settingsTitle: "KI-Einstellungen",
+    settingsDesc: "Diese App funktioniert offline. Für erweiterte KI (Gemini) geben Sie Ihren API-Schlüssel ein.",
+    saveKey: "Speichern & KI Aktivieren",
     tools: {
       quiz: { title: "Interaktives Quiz", desc: "Testen Sie Ihr Wissen mit automatisch generierten Fragen." },
       flashcards: { title: "Smarte Lernkarten", desc: "Merken Sie sich Schlüsselkonzepte effektiv." },
@@ -279,10 +291,10 @@ export const translations: Record<Language, any> = {
       regenerate: "Regenerieren"
     },
     chat: {
-      title: "Offline-Assistent",
-      welcome: "Hallo! Ich bin Cognos (Offline). Ich kann nach Schlüsselwörtern suchen.",
-      thinking: "Suche...",
-      placeholder: "Suchbegriff eingeben...",
+      title: "Lernassistent",
+      welcome: "Hallo! Ich bin Cognos. Fragen Sie mich etwas.",
+      thinking: "Denken...",
+      placeholder: "Stellen Sie eine Frage...",
       error: "Entschuldigung, ein Fehler ist aufgetreten."
     },
     nav: {
@@ -300,6 +312,9 @@ export const translations: Record<Language, any> = {
     pastePlaceholder: "Cole seu texto aqui...",
     dashboardWelcome: "Bem-vindo de volta",
     studying: "Estudando atualmente:",
+    settingsTitle: "Configurações de IA",
+    settingsDesc: "Este app funciona offline. Para ativar a IA avançada (Gemini), insira sua chave API.",
+    saveKey: "Salvar e Ativar IA",
     tools: {
       quiz: { title: "Quiz Interativo", desc: "Teste seu conhecimento com perguntas autogeradas." },
       flashcards: { title: "Flashcards Inteligentes", desc: "Memorize conceitos-chave com recordação ativa." },
@@ -351,10 +366,10 @@ export const translations: Record<Language, any> = {
       regenerate: "Regenerar"
     },
     chat: {
-      title: "Assistente Offline",
-      welcome: "Olá! Sou o Cognos (Offline). Posso buscar palavras-chave.",
-      thinking: "Buscando...",
-      placeholder: "Buscar palavra-chave...",
+      title: "Assistente de Estudo",
+      welcome: "Olá! Sou o Cognos. Pergunte-me qualquer coisa.",
+      thinking: "Pensando...",
+      placeholder: "Faça uma pergunta...",
       error: "Desculpe, encontrei um erro."
     },
     nav: {
@@ -372,6 +387,9 @@ export const translations: Record<Language, any> = {
     pastePlaceholder: "在此粘贴您的文本内容...",
     dashboardWelcome: "欢迎回来",
     studying: "当前学习：",
+    settingsTitle: "AI 设置",
+    settingsDesc: "此应用程序默认离线工作。要启用高级 AI 功能（由 Gemini 提供支持），请输入您的 API 密钥。",
+    saveKey: "保存并启用 AI",
     tools: {
       quiz: { title: "互动测验", desc: "通过自动生成的问题测试您的知识。" },
       flashcards: { title: "智能抽认卡", desc: "通过主动回忆卡片记忆关键概念。" },
@@ -423,10 +441,10 @@ export const translations: Record<Language, any> = {
       regenerate: "重新生成"
     },
     chat: {
-      title: "离线助手",
-      welcome: "你好！我是 Cognos（离线模式）。我可以帮助您查找笔记中的关键词。",
-      thinking: "搜索中...",
-      placeholder: "搜索关键词...",
+      title: "学习助手",
+      welcome: "你好！我是 Cognos。有关笔记的任何问题都可以问我。",
+      thinking: "思考中...",
+      placeholder: "提出问题...",
       error: "抱歉，我遇到了错误。"
     },
     nav: {
