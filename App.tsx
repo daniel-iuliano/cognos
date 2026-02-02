@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Upload, BookOpen, BrainCircuit, Calendar, Layers, FileText, ChevronRight, MessageCircle, Globe, Loader2, Key, Unlock } from 'lucide-react';
+
+import React, { useState, useRef } from 'react';
+import { Upload, BookOpen, BrainCircuit, Calendar, Layers, FileText, ChevronRight, MessageCircle, Globe, Loader2 } from 'lucide-react';
 import { AppMode, QuizItem, Flashcard, StudyPlan, StudyContext, Language } from './types';
 import * as GeminiService from './services/geminiService';
 import { parseFile } from './services/fileParser';
@@ -11,15 +12,6 @@ import FlashcardModule from './components/FlashcardModule';
 import StudyPlanModule from './components/StudyPlanModule';
 import ChatAssistant from './components/ChatAssistant';
 
-interface AIStudioClient {
-  hasSelectedApiKey: () => Promise<boolean>;
-  openSelectKey: () => Promise<void>;
-}
-
-const getAIStudio = (): AIStudioClient | undefined => {
-  return (window as any).aistudio;
-};
-
 const App: React.FC = () => {
   const [mode, setMode] = useState<AppMode>(AppMode.UPLOAD);
   const [context, setContext] = useState<StudyContext | null>(null);
@@ -27,8 +19,6 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [language, setLanguage] = useState<Language>('en');
-  const [hasApiKey, setHasApiKey] = useState(false);
-  const [isCheckingKey, setIsCheckingKey] = useState(true);
 
   // Data States
   const [quiz, setQuiz] = useState<QuizItem[]>([]);
@@ -39,45 +29,6 @@ const App: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const t = translations[language];
-
-  // Check for API Key on mount
-  useEffect(() => {
-    const checkKey = async () => {
-      const aiStudio = getAIStudio();
-      if (aiStudio) {
-        try {
-          const hasKey = await aiStudio.hasSelectedApiKey();
-          setHasApiKey(hasKey);
-        } catch (e) {
-          console.error("Error checking API key:", e);
-          setHasApiKey(false);
-        }
-      }
-      setIsCheckingKey(false);
-    };
-    checkKey();
-  }, []);
-
-  const handleConnectApiKey = async () => {
-    const aiStudio = getAIStudio();
-    if (aiStudio) {
-      try {
-        await aiStudio.openSelectKey();
-        // Assume success if no error thrown
-        setHasApiKey(true);
-      } catch (e) {
-        console.error("Failed to select key:", e);
-        // Error handling as per instructions
-        // If "Requested entity was not found" error, reset state
-        // Here we just log and user can try again
-      }
-    }
-  };
-
-  const handleUseFreeKey = () => {
-    // Proceed without explicit key selection, relying on environment default or free tier
-    setHasApiKey(true);
-  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -119,15 +70,8 @@ const App: React.FC = () => {
   };
 
   const handleError = (e: any, defaultMsg: string) => {
-    // If the error suggests the key is invalid or missing (404/403 often related to key issues in this context)
-    // or specifically "Requested entity was not found"
-    const errMsg = e?.message || "";
-    if (errMsg.includes("Requested entity was not found") || errMsg.includes("API key")) {
-      setHasApiKey(false);
-      setError("API Key connection failed. Please connect your key again.");
-    } else {
-      setError(defaultMsg);
-    }
+    console.error(e);
+    setError(defaultMsg);
   };
 
   const generateQuiz = async () => {
@@ -137,7 +81,7 @@ const App: React.FC = () => {
       const data = await GeminiService.generateQuizFromText(context.rawText, language);
       setQuiz(data);
     } catch (e) {
-      handleError(e, "Failed to generate quiz. Please try again.");
+      handleError(e, "Failed to generate quiz.");
     } finally {
       setIsProcessing(false);
     }
@@ -206,7 +150,7 @@ const App: React.FC = () => {
               <div className="space-y-4">
                 <button 
                   onClick={() => {
-                    alert(t.formatAlert);
+                    // alert(t.formatAlert);
                     fileInputRef.current?.click();
                   }}
                   disabled={isProcessing}
@@ -239,6 +183,7 @@ const App: React.FC = () => {
               </div>
               {error && <p className="mt-4 text-red-500 text-sm font-medium">{error}</p>}
             </div>
+            <p className="mt-8 text-xs text-gray-400">Fully Offline Version. No data leaves your device.</p>
           </div>
         );
 
@@ -323,76 +268,6 @@ const App: React.FC = () => {
         return <div>Not Implemented</div>;
     }
   };
-
-  if (isCheckingKey) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <Loader2 className="animate-spin text-indigo-600" size={40} />
-      </div>
-    );
-  }
-
-  // API Key Connection Modal
-  if (!hasApiKey) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
-        <div className="bg-white p-10 rounded-3xl shadow-xl max-w-lg w-full border border-gray-100 text-center">
-          <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6 text-indigo-600">
-            <Key size={36} />
-          </div>
-          <h1 className="text-3xl font-black text-gray-900 mb-4">{t.apiKey.title}</h1>
-          <p className="text-gray-500 mb-8 leading-relaxed">
-            {t.apiKey.desc}
-          </p>
-          <button 
-            onClick={handleConnectApiKey}
-            className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-200 flex items-center justify-center gap-2 mb-4"
-          >
-            <BrainCircuit size={20} />
-            {t.apiKey.connectBtn}
-          </button>
-
-          <button 
-            onClick={handleUseFreeKey}
-            className="w-full py-4 bg-white border border-gray-200 text-gray-700 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-2 mb-6"
-          >
-            <Unlock size={20} className="text-gray-500" />
-            {t.apiKey.freeBtn}
-          </button>
-          
-          <a 
-            href="https://ai.google.dev/gemini-api/docs/billing" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-indigo-600 hover:text-indigo-800 text-sm font-medium hover:underline"
-          >
-            {t.apiKey.billing}
-          </a>
-
-          {/* Language Selector in Modal */}
-          <div className="mt-8 pt-6 border-t border-gray-100 flex justify-center">
-             <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-md">
-                 <Globe size={16} className="text-gray-500" />
-                 <select 
-                   value={language} 
-                   onChange={(e) => {
-                     setLanguage(e.target.value as Language);
-                   }}
-                   className="bg-transparent text-sm text-gray-700 focus:outline-none cursor-pointer"
-                 >
-                   <option value="en">English</option>
-                   <option value="es">Español</option>
-                   <option value="fr">Français</option>
-                   <option value="de">Deutsch</option>
-                   <option value="pt">Português</option>
-                   <option value="zh">中文</option>
-                 </select>
-               </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">

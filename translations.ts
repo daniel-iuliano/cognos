@@ -1,10 +1,11 @@
+
 import { Language } from './types';
 
 export const translations: Record<Language, any> = {
   en: {
     appTitle: "Cognos",
-    uploadTitle: "Cognos: AI Study Companion",
-    uploadDesc: "Upload your study material to generate quizzes, flashcards, and personalized plans instantly.",
+    uploadTitle: "Cognos: Offline Study Companion",
+    uploadDesc: "Upload your study material to generate quizzes, flashcards, and personalized plans instantly. Works entirely offline.",
     uploadBtn: "Upload File",
     formatAlert: "Only PDF, Word, and TXT files are accepted.",
     or: "OR",
@@ -12,10 +13,10 @@ export const translations: Record<Language, any> = {
     dashboardWelcome: "Welcome Back",
     studying: "Currently studying:",
     tools: {
-      quiz: { title: "Interactive Quiz", desc: "Test your knowledge with AI-generated questions." },
+      quiz: { title: "Interactive Quiz", desc: "Test your knowledge with auto-generated questions." },
       flashcards: { title: "Smart Flashcards", desc: "Memorize key concepts with active recall cards." },
       plan: { title: "Adaptive Study Plan", desc: "Get a 4-week structured timeline based on your material." },
-      simplify: { title: "Simplify Concepts", desc: "Explain complex topics in simple, beginner-friendly terms." }
+      simplify: { title: "Simplify Concepts", desc: "Get a digest of the most important concepts." }
     },
     quiz: {
       noData: "No quiz generated yet.",
@@ -56,34 +57,27 @@ export const translations: Record<Language, any> = {
       refining: "Refining Plan..."
     },
     simplify: {
-      title: "Simplified Explanation",
-      analyzing: "Analyzing and simplifying text...",
-      placeholder: "Click regenerate to simplify text.",
+      title: "Content Digest",
+      analyzing: "Analyzing text...",
+      placeholder: "Click regenerate to see a summary digest.",
       regenerate: "Regenerate"
     },
     chat: {
-      title: "AI Assistant",
-      welcome: "Hi! I'm Cognos. I've read your study material. Ask me anything about it!",
-      thinking: "Thinking...",
-      placeholder: "Ask about your notes...",
+      title: "Offline Assistant",
+      welcome: "Hi! I'm Cognos (Offline Mode). I can help you find keywords in your notes.",
+      thinking: "Searching...",
+      placeholder: "Search for a keyword...",
       error: "Sorry, I encountered an error."
     },
     nav: {
       dashboard: "Dashboard",
       uploadNew: "Upload New"
-    },
-    apiKey: {
-      title: "Connect Google AI",
-      desc: "To use Cognos, you need to connect your Google Cloud Project API key. This ensures secure access to Gemini models.",
-      connectBtn: "Connect Paid API Key",
-      freeBtn: "Continue with Free Key",
-      billing: "View Billing Documentation"
     }
   },
   es: {
     appTitle: "Cognos",
-    uploadTitle: "Cognos: Compañero de Estudio IA",
-    uploadDesc: "Sube tu material de estudio para generar cuestionarios, tarjetas didácticas y planes personalizados al instante.",
+    uploadTitle: "Cognos: Compañero de Estudio Offline",
+    uploadDesc: "Sube tu material de estudio para generar cuestionarios, tarjetas didácticas y planes. Funciona totalmente sin conexión.",
     uploadBtn: "Subir Archivo",
     formatAlert: "Solo se aceptan archivos PDF, Word y TXT.",
     or: "O",
@@ -91,10 +85,10 @@ export const translations: Record<Language, any> = {
     dashboardWelcome: "Bienvenido de nuevo",
     studying: "Estudiando actualmente:",
     tools: {
-      quiz: { title: "Cuestionario Interactivo", desc: "Pon a prueba tus conocimientos con preguntas generadas por IA." },
+      quiz: { title: "Cuestionario Interactivo", desc: "Pon a prueba tus conocimientos con preguntas autogeneradas." },
       flashcards: { title: "Tarjetas Inteligentes", desc: "Memoriza conceptos clave con tarjetas de repaso activo." },
-      plan: { title: "Plan de Estudio Adaptativo", desc: "Obtén un cronograma estruturado de 4 semanas basado en tu material." },
-      simplify: { title: "Simplificar Conceptos", desc: "Explica temas complejos en términos simples para principiantes." }
+      plan: { title: "Plan de Estudio Adaptativo", desc: "Obtén un cronograma estruturado de 4 semanas." },
+      simplify: { title: "Resumen de Contenido", desc: "Obtén un resumen de los conceptos más importantes." }
     },
     quiz: {
       noData: "Aún no hay cuestionario.",
@@ -135,34 +129,27 @@ export const translations: Record<Language, any> = {
       refining: "Refinando Plan..."
     },
     simplify: {
-      title: "Explicación Simplificada",
-      analyzing: "Analizando y simplificando texto...",
-      placeholder: "Haz clic en regenerar para simplificar el texto.",
+      title: "Resumen",
+      analyzing: "Analizando texto...",
+      placeholder: "Haz clic en regenerar para ver el resumen.",
       regenerate: "Regenerar"
     },
     chat: {
-      title: "Asistente IA",
-      welcome: "¡Hola! Soy Cognos. He leído tu material. ¡Pregúntame lo que quieras!",
-      thinking: "Pensando...",
-      placeholder: "Pregunta sobre tus apuntes...",
+      title: "Asistente Offline",
+      welcome: "¡Hola! Soy Cognos (Modo Offline). Puedo ayudarte a buscar palabras clave.",
+      thinking: "Buscando...",
+      placeholder: "Buscar palabra clave...",
       error: "Lo siento, encontré un error."
     },
     nav: {
       dashboard: "Panel",
       uploadNew: "Subir Nuevo"
-    },
-    apiKey: {
-      title: "Conectar Google AI",
-      desc: "Para usar Cognos, necesitas conectar tu clave API de Google Cloud Project. Esto asegura el acceso seguro a los modelos Gemini.",
-      connectBtn: "Conectar Clave API de Pago",
-      freeBtn: "Continuar con Clave Gratuita",
-      billing: "Ver Documentación de Facturación"
     }
   },
   fr: {
     appTitle: "Cognos",
-    uploadTitle: "Cognos: Compagnon d'Étude IA",
-    uploadDesc: "Téléchargez votre matériel d'étude pour générer instantanément des quiz, des cartes mémoire et des plans personnalisés.",
+    uploadTitle: "Cognos: Compagnon d'Étude Hors Ligne",
+    uploadDesc: "Téléchargez votre matériel d'étude pour générer des quiz et plans. Fonctionne entièrement hors ligne.",
     uploadBtn: "Télécharger un fichier",
     formatAlert: "Seuls les fichiers PDF, Word et TXT sont acceptés.",
     or: "OU",
@@ -170,10 +157,10 @@ export const translations: Record<Language, any> = {
     dashboardWelcome: "Bon retour",
     studying: "Étude en cours :",
     tools: {
-      quiz: { title: "Quiz Interactif", desc: "Testez vos connaissances avec des questions générées par l'IA." },
+      quiz: { title: "Quiz Interactif", desc: "Testez vos connaissances avec des questions auto-générées." },
       flashcards: { title: "Cartes Mémoire", desc: "Mémorisez les concepts clés avec le rappel actif." },
       plan: { title: "Plan d'Étude Adaptatif", desc: "Obtenez un calendrier structuré de 4 semaines." },
-      simplify: { title: "Simplifier les Concepts", desc: "Expliquez des sujets complexes en termes simples." }
+      simplify: { title: "Résumé du Contenu", desc: "Obtenez un résumé des concepts importants." }
     },
     quiz: {
       noData: "Aucun quiz généré.",
@@ -214,34 +201,27 @@ export const translations: Record<Language, any> = {
       refining: "Affinage..."
     },
     simplify: {
-      title: "Explication Simplifiée",
-      analyzing: "Analyse et simplification...",
-      placeholder: "Cliquez sur régénérer pour simplifier.",
+      title: "Résumé",
+      analyzing: "Analyse...",
+      placeholder: "Cliquez sur régénérer pour voir le résumé.",
       regenerate: "Régénérer"
     },
     chat: {
-      title: "Assistant IA",
-      welcome: "Salut ! Je suis Cognos. J'ai lu votre matériel. Posez-moi des questions !",
-      thinking: "Réflexion...",
-      placeholder: "Posez une question...",
+      title: "Assistant Hors Ligne",
+      welcome: "Salut ! Je suis Cognos (Hors Ligne). Je peux trouver des mots-clés.",
+      thinking: "Recherche...",
+      placeholder: "Chercher un mot-clé...",
       error: "Désolé, une erreur s'est produite."
     },
     nav: {
       dashboard: "Tableau de bord",
       uploadNew: "Nouveau fichier"
-    },
-    apiKey: {
-      title: "Connecter Google AI",
-      desc: "Pour utiliser Cognos, vous devez connecter votre clé API Google Cloud Project.",
-      connectBtn: "Connecter Clé API Payante",
-      freeBtn: "Continuer avec Clé Gratuite",
-      billing: "Voir la Documentation de Facturation"
     }
   },
   de: {
     appTitle: "Cognos",
-    uploadTitle: "Cognos: KI-Lernbegleiter",
-    uploadDesc: "Laden Sie Ihr Lernmaterial hoch, um sofort Quizze, Lernkarten und Pläne zu erstellen.",
+    uploadTitle: "Cognos: Offline-Lernbegleiter",
+    uploadDesc: "Laden Sie Ihr Material hoch. Funktioniert komplett offline.",
     uploadBtn: "Datei hochladen",
     formatAlert: "Nur PDF-, Word- und TXT-Dateien werden akzeptiert.",
     or: "ODER",
@@ -249,10 +229,10 @@ export const translations: Record<Language, any> = {
     dashboardWelcome: "Willkommen zurück",
     studying: "Aktuell wird gelernt:",
     tools: {
-      quiz: { title: "Interaktives Quiz", desc: "Testen Sie Ihr Wissen mit KI-generierten Fragen." },
+      quiz: { title: "Interaktives Quiz", desc: "Testen Sie Ihr Wissen mit automatisch generierten Fragen." },
       flashcards: { title: "Smarte Lernkarten", desc: "Merken Sie sich Schlüsselkonzepte effektiv." },
       plan: { title: "Adaptiver Lernplan", desc: "Erhalten Sie einen strukturierten 4-Wochen-Plan." },
-      simplify: { title: "Konzepte vereinfachen", desc: "Erklären Sie komplexe Themen in einfachen Begriffen." }
+      simplify: { title: "Zusammenfassung", desc: "Erhalten Sie eine Zusammenfassung der wichtigsten Konzepte." }
     },
     quiz: {
       noData: "Noch kein Quiz generiert.",
@@ -293,34 +273,27 @@ export const translations: Record<Language, any> = {
       refining: "Verfeinere..."
     },
     simplify: {
-      title: "Vereinfachte Erklärung",
-      analyzing: "Analysiere und vereinfache...",
+      title: "Zusammenfassung",
+      analyzing: "Analysiere...",
       placeholder: "Klicken Sie auf Regenerieren.",
       regenerate: "Regenerieren"
     },
     chat: {
-      title: "KI-Assistent",
-      welcome: "Hallo! Ich bin Cognos. Fragen Sie mich etwas zum Material!",
-      thinking: "Nachdenken...",
-      placeholder: "Fragen Sie etwas...",
+      title: "Offline-Assistent",
+      welcome: "Hallo! Ich bin Cognos (Offline). Ich kann nach Schlüsselwörtern suchen.",
+      thinking: "Suche...",
+      placeholder: "Suchbegriff eingeben...",
       error: "Entschuldigung, ein Fehler ist aufgetreten."
     },
     nav: {
       dashboard: "Dashboard",
       uploadNew: "Neu hochladen"
-    },
-    apiKey: {
-      title: "Google AI Verbinden",
-      desc: "Um Cognos zu nutzen, müssen Sie Ihren Google Cloud Project API-Schlüssel verbinden.",
-      connectBtn: "Kostenpflichtigen API-Schlüssel verbinden",
-      freeBtn: "Mit kostenlosem Schlüssel fortfahren",
-      billing: "Abrechnungsdokumentation anzeigen"
     }
   },
   pt: {
     appTitle: "Cognos",
-    uploadTitle: "Cognos: Companheiro de Estudo IA",
-    uploadDesc: "Envie seu material de estudo para gerar quizzes, flashcards e planos personalizados instantaneamente.",
+    uploadTitle: "Cognos: Companheiro de Estudo Offline",
+    uploadDesc: "Envie seu material de estudo. Funciona totalmente offline.",
     uploadBtn: "Enviar Arquivo",
     formatAlert: "Apenas arquivos PDF, Word e TXT são aceitos.",
     or: "OU",
@@ -328,10 +301,10 @@ export const translations: Record<Language, any> = {
     dashboardWelcome: "Bem-vindo de volta",
     studying: "Estudando atualmente:",
     tools: {
-      quiz: { title: "Quiz Interativo", desc: "Teste seu conhecimento com perguntas geradas por IA." },
+      quiz: { title: "Quiz Interativo", desc: "Teste seu conhecimento com perguntas autogeradas." },
       flashcards: { title: "Flashcards Inteligentes", desc: "Memorize conceitos-chave com recordação ativa." },
       plan: { title: "Plano de Estudo Adaptativo", desc: "Obtenha um cronograma estruturado de 4 semanas." },
-      simplify: { title: "Simplificar Conceitos", desc: "Explique tópicos complexos em termos simples." }
+      simplify: { title: "Resumo", desc: "Obtenha um resumo dos conceitos mais importantes." }
     },
     quiz: {
       noData: "Nenhum quiz gerado ainda.",
@@ -372,34 +345,27 @@ export const translations: Record<Language, any> = {
       refining: "Refinando..."
     },
     simplify: {
-      title: "Explicação Simplificada",
-      analyzing: "Analisando e simplificando...",
-      placeholder: "Clique em regenerar para simplificar.",
+      title: "Resumo",
+      analyzing: "Analisando...",
+      placeholder: "Clique em regenerar para ver o resumo.",
       regenerate: "Regenerar"
     },
     chat: {
-      title: "Assistente IA",
-      welcome: "Olá! Sou o Cognos. Li seu material. Pergunte-me qualquer coisa!",
-      thinking: "Pensando...",
-      placeholder: "Pergunte sobre suas notas...",
+      title: "Assistente Offline",
+      welcome: "Olá! Sou o Cognos (Offline). Posso buscar palavras-chave.",
+      thinking: "Buscando...",
+      placeholder: "Buscar palavra-chave...",
       error: "Desculpe, encontrei um erro."
     },
     nav: {
       dashboard: "Painel",
       uploadNew: "Enviar Novo"
-    },
-    apiKey: {
-      title: "Conectar Google AI",
-      desc: "Para usar o Cognos, você precisa conectar sua chave de API do Google Cloud Project.",
-      connectBtn: "Conectar Chave API Paga",
-      freeBtn: "Continuar com Chave Gratuita",
-      billing: "Ver Documentação de Faturamento"
     }
   },
   zh: {
     appTitle: "Cognos",
-    uploadTitle: "Cognos: AI 学习伴侣",
-    uploadDesc: "上传您的学习资料，即时生成测验、抽认卡和个性化学习计划。",
+    uploadTitle: "Cognos: 离线学习伴侣",
+    uploadDesc: "上传您的学习资料。完全离线工作。",
     uploadBtn: "上传文件",
     formatAlert: "仅接受 PDF、Word 和 TXT 文件。",
     or: "或",
@@ -407,10 +373,10 @@ export const translations: Record<Language, any> = {
     dashboardWelcome: "欢迎回来",
     studying: "当前学习：",
     tools: {
-      quiz: { title: "互动测验", desc: "通过 AI 生成的问题测试您的知识。" },
+      quiz: { title: "互动测验", desc: "通过自动生成的问题测试您的知识。" },
       flashcards: { title: "智能抽认卡", desc: "通过主动回忆卡片记忆关键概念。" },
       plan: { title: "自适应学习计划", desc: "根据您的材料获取为期 4 周的结构化时间表。" },
-      simplify: { title: "简化概念", desc: "用简单的入门术语解释复杂的主题。" }
+      simplify: { title: "内容摘要", desc: "获取最重要概念的摘要。" }
     },
     quiz: {
       noData: "尚未生成测验。",
@@ -451,28 +417,21 @@ export const translations: Record<Language, any> = {
       refining: "优化中..."
     },
     simplify: {
-      title: "简化解释",
-      analyzing: "正在分析和简化文本...",
-      placeholder: "点击重新生成以简化文本。",
+      title: "摘要",
+      analyzing: "正在分析...",
+      placeholder: "点击重新生成以查看摘要。",
       regenerate: "重新生成"
     },
     chat: {
-      title: "AI 助手",
-      welcome: "你好！我是 Cognos。我已经阅读了您的学习材料。尽管问我！",
-      thinking: "思考中...",
-      placeholder: "询问有关您笔记的问题...",
+      title: "离线助手",
+      welcome: "你好！我是 Cognos（离线模式）。我可以帮助您查找笔记中的关键词。",
+      thinking: "搜索中...",
+      placeholder: "搜索关键词...",
       error: "抱歉，我遇到了错误。"
     },
     nav: {
       dashboard: "仪表板",
       uploadNew: "上传新文件"
-    },
-    apiKey: {
-      title: "连接 Google AI",
-      desc: "要使用 Cognos，您需要连接您的 Google Cloud 项目 API 密钥。",
-      connectBtn: "连接付费 API 密钥",
-      freeBtn: "使用免费密钥继续",
-      billing: "查看计费文档"
     }
   }
 };
